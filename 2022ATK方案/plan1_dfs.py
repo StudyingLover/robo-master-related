@@ -94,7 +94,7 @@ def add_dfs(dep):
 
                 if data[i] in original_data and data[j] in original_data:  #第二种产生数的方式是拼接，必须保证是原数组中的数字拼接，而不是计算所得的结果参与拼接
                     data[i] = 10*y+x                                       #因为是24点，加法不可能出现三位加一位，所以只考虑两个数字拼接，且拼出来的数不可能大于24
-                    if data[i] <= 24:
+                    if data[i] <= 24 and dep == 0 or data[i] < 24 and dep >=1:
                         ans[dep][1] = index[j]                             #记录下标，格式为【-999，num1下标，num2下标】 
                         ans[dep][2] = index[i]
                         data[j] = -1
@@ -110,7 +110,7 @@ def add_dfs(dep):
                         data[j] = y
 
                     data[i] = 10*x+y                                       #这里就是反过来拼接数字，同上
-                    if data[i] <= 24:
+                    if data[i] <= 24 and dep == 0 or data[i] < 24 and dep >=1:
                         ans[dep][1] = index[i]
                         ans[dep][2] = index[j]
                         data[j] = -1
@@ -126,7 +126,7 @@ def add_dfs(dep):
                         data[j] = y
     
 
-def mult_dfs(dep,force_not_quit = False):            #乘法加法一样的，你们可以参考加法来理解乘法
+def mult_dfs(dep):            #乘法加法一样的，你们可以参考加法来理解乘法
     '''
     
 
@@ -134,16 +134,13 @@ def mult_dfs(dep,force_not_quit = False):            #乘法加法一样的，�
     ----------
     dep : int
         the depth of dfs,which should always 0 when you using this function.
-    force_not_quit : bool
-        if set True,it will force the function to step into next level,to prevent generate an 24 by joint two number and exit right away.
-        if not set ,it should be False
 
     Returns
     -------
     None.
 
     '''
-    if check() and dep >= 2 and not force_not_quit:
+    if check() and dep >= 2:
         return
 
     for i in range(0, 4):
@@ -171,10 +168,7 @@ def mult_dfs(dep,force_not_quit = False):            #乘法加法一样的，�
                         ans[dep][1] = index[j]
                         ans[dep][2] = index[i]
                         data[j] = -1
-                        if data[i] == 24:
-                            mult_dfs(dep+1,True)
-                        else:
-                            mult_dfs(dep+1)
+                        mult_dfs(dep+1)
                         if check():
                             return
                         data[i] = x
@@ -190,10 +184,7 @@ def mult_dfs(dep,force_not_quit = False):            #乘法加法一样的，�
                         ans[dep][1] = index[i]
                         ans[dep][2] = index[j]
                         data[j] = -1
-                        if data[i] == 24:
-                            mult_dfs(dep+1,True)
-                        else:
-                            mult_dfs(dep+1)
+                        mult_dfs(dep+1)
                         if check():
                             return
                         data[i] = x
