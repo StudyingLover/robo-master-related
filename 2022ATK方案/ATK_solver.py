@@ -6,7 +6,7 @@ Created on Sun May  1 11:25:42 2022
 """
 
 
-class ATK_solver(object):
+class ATK_solver:
 
     def __init__(self, OPT_, original_data_):
         '''
@@ -240,11 +240,11 @@ class ATK_solver(object):
 
                     if x in self.original_data and y in self.original_data:
 
-                        self.data[i] = 10*y+x
-                        if self.data[i] > 24 and dep == 0 or dep >= 1 and (self.data[i] == 24 and 48 in self.data or self.data[i] != 24):
+                        self.data[j] = 10*y+x
+                        if self.data[j] > 24 and dep == 0 or dep >= 1 and (self.data[j] == 24 and 48 in self.data or self.data[j] != 24):
                             self.ans[dep][1] = self.index[j]
                             self.ans[dep][2] = self.index[i]
-                            self.data[j] = -1
+                            self.data[i] = -1
                             self.sub_dfs(dep+1)
                             if self.check():
                                 return
@@ -272,24 +272,25 @@ class ATK_solver(object):
                             self.data[i] = x
                             self.data[j] = y
 
-                    self.data[i] = abs(x - y)
-                    self.data[j] = -1
-                    if x - y < 0:
-                        self.ans[dep][0] = self.index[j]
-                        self.ans[dep][1] = 0
-                        self.ans[dep][2] = self.index[i]
-                    else:
-                        self.ans[dep][0] = self.index[i]
-                        self.ans[dep][1] = 0
-                        self.ans[dep][2] = self.index[j]
-                    self.sub_dfs(dep+1)
-                    if self.check():
-                        return
-                    self.data[i] = x
-                    self.data[j] = y
-                    self.ans[dep][0] = -999
-                    self.ans[dep][1] = -999
-                    self.ans[dep][2] = -999
+                    if x > 24 or y > 24:
+                        self.data[i] = abs(x - y)
+                        self.data[j] = -1
+                        if x - y < 0:
+                            self.ans[dep][0] = self.index[j]
+                            self.ans[dep][1] = 0
+                            self.ans[dep][2] = self.index[i]
+                        else:
+                            self.ans[dep][0] = self.index[i]
+                            self.ans[dep][1] = 0
+                            self.ans[dep][2] = self.index[j]
+                        self.sub_dfs(dep+1)
+                        if self.check():
+                            return
+                        self.data[i] = x
+                        self.data[j] = y
+                        self.ans[dep][0] = -999
+                        self.ans[dep][1] = -999
+                        self.ans[dep][2] = -999
 
     def solve(self):
         '''
@@ -327,9 +328,14 @@ class ATK_solver(object):
 
         hit_order = []
         if self.ans[0][0] == -999 and self.ans[1][0] == -999:
-            hit_order = [self.ans[0][1], self.ans[0][2],
-                         0,
-                         self.ans[1][1], self.ans[1][2]]
+            if self.original_data[self.ans[0][1]-1]*10+self.original_data[self.ans[0][2]-1] > self.original_data[self.ans[1][1]-1]*10+self.original_data[self.ans[1][2]-1]:
+                hit_order = [self.ans[0][1], self.ans[0][2],
+                             0,
+                             self.ans[1][1], self.ans[1][2]]
+            else:
+                hit_order = [self.ans[1][1], self.ans[1][2],
+                             0,
+                             self.ans[0][1], self.ans[0][2]]
         else:
             if self.ans[0][0] == -999:
                 hit_order.append(self.ans[0][1])
