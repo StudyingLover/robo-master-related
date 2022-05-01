@@ -5,7 +5,8 @@ Created on Sun May  1 11:25:42 2022
 @author: Ni Jingzhe
 """
 
-class ATK_solver(object):
+
+class ATK_solver:
 
     def __init__(self, OPT_, original_data_):
         '''
@@ -27,7 +28,7 @@ class ATK_solver(object):
         self.data = []
         self.index = [1, 2, 3, 4]
         self.original_data = original_data_
-        self.OPT = OPT_
+        self.opt = OPT_
         self.ans = [[-999, -999, -999], [-999, -999, -999],
                     [-999, -999, -999], [-999, -999, -999]]
 
@@ -38,7 +39,7 @@ class ATK_solver(object):
 
     def bubble_sort(self):
         '''
-        
+
 
         Returns
         -------
@@ -65,7 +66,7 @@ class ATK_solver(object):
         Returns
         -------
         bool
-            if there is a 24 in 'data' ,which represent we've got a solution, 
+            if there is a 24 in 'data' ,which represent we've got a solution,
             the funcion will return True.
 
         '''
@@ -93,7 +94,7 @@ class ATK_solver(object):
 
         for i in range(0, 4):
             for j in range(0, 4):  # 枚举两个数
-                if i != j and self.data[i] > 0 and self.data[j] > 0:  # 每次产生一个新数放回data中
+                if i != j and self.data[i] >= 0 and self.data[j] >= 0:  # 每次产生一个新数放回data中
                     self.ans[dep][0] = self.index[i]  # 记录枚举的数字的索引
                     self.ans[dep][1] = 0  # 格式为 【num1下标，0（代表运算符），num2下标】
                     self.ans[dep][2] = self.index[j]
@@ -165,7 +166,7 @@ class ATK_solver(object):
 
         for i in range(0, 4):
             for j in range(0, 4):
-                if i != j and self.data[i] > 0 and self.data[j] > 0:
+                if i != j and self.data[i] >= 0 and self.data[j] >= 0:
                     self.ans[dep][0] = self.index[i]
                     self.ans[dep][1] = 0
                     self.ans[dep][2] = self.index[j]
@@ -215,6 +216,82 @@ class ATK_solver(object):
                             self.data[i] = x
                             self.data[j] = y
 
+    def sub_dfs(self, dep):
+        '''
+        Parameters
+        ----------
+        dep : int
+            the depth of dfs,which should always 0 when you using this function.
+
+        Returns
+        -------
+        None.
+
+        '''
+        if self.check() and dep >= 2:
+            return
+
+        for i in range(0, 4):
+            for j in range(0, 4):
+                if i != j and self.data[i] > 0 and self.data[j] > 0:
+
+                    x = self.data[i]
+                    y = self.data[j]
+
+                    if x in self.original_data and y in self.original_data:
+
+                        self.data[j] = 10*y+x
+                        if self.data[j] > 24 and dep == 0 or dep >= 1 and (self.data[j] == 24 and 48 in self.data or self.data[j] != 24):
+                            self.ans[dep][1] = self.index[j]
+                            self.ans[dep][2] = self.index[i]
+                            self.data[i] = -1
+                            self.sub_dfs(dep+1)
+                            if self.check():
+                                return
+                            self.data[i] = x
+                            self.data[j] = y
+                            self.ans[dep][1] = -999
+                            self.ans[dep][2] = -999
+                        else:
+                            self.data[i] = x
+                            self.data[j] = y
+
+                        self.data[i] = 10*x+y
+                        if self.data[i] > 24 and dep == 0 or dep >= 1 and (self.data[i] == 24 and 48 in self.data or self.data[i] != 24):
+                            self.ans[dep][1] = self.index[i]
+                            self.ans[dep][2] = self.index[j]
+                            self.data[j] = -1
+                            self.sub_dfs(dep+1)
+                            if self.check():
+                                return
+                            self.data[i] = x
+                            self.data[j] = y
+                            self.ans[dep][1] = -999
+                            self.ans[dep][2] = -999
+                        else:
+                            self.data[i] = x
+                            self.data[j] = y
+
+                    if x > 24 or y > 24:
+                        self.data[i] = abs(x - y)
+                        self.data[j] = -1
+                        if x - y < 0:
+                            self.ans[dep][0] = self.index[j]
+                            self.ans[dep][1] = 0
+                            self.ans[dep][2] = self.index[i]
+                        else:
+                            self.ans[dep][0] = self.index[i]
+                            self.ans[dep][1] = 0
+                            self.ans[dep][2] = self.index[j]
+                        self.sub_dfs(dep+1)
+                        if self.check():
+                            return
+                        self.data[i] = x
+                        self.data[j] = y
+                        self.ans[dep][0] = -999
+                        self.ans[dep][1] = -999
+                        self.ans[dep][2] = -999
+
     def solve(self):
         '''
         Parameters
@@ -227,10 +304,12 @@ class ATK_solver(object):
         None.
 
         '''
-        if self.OPT == "*":
+        if self.opt == "*":
             self.mult_dfs(0)
-        if self.OPT == "+":
+        if self.opt == "+":
             self.add_dfs(0)
+        if self.opt == "-":
+            self.sub_dfs(0)
 
     def generate_hit_order(self):
         '''
@@ -242,20 +321,32 @@ class ATK_solver(object):
             the order to hit the ATK.
             It should be empty if no solution was found
         '''
+        self.solve()
+
         if not self.check():
             return []
 
         hit_order = []
-        if self.ans[0][0] == -999:
-            hit_order.append(self.ans[0][1])
-            hit_order.append(self.ans[0][2])
+        if self.ans[0][0] == -999 and self.ans[1][0] == -999:
+            if self.original_data[self.ans[0][1]-1]*10+self.original_data[self.ans[0][2]-1] > self.original_data[self.ans[1][1]-1]*10+self.original_data[self.ans[1][2]-1]:
+                hit_order = [self.ans[0][1], self.ans[0][2],
+                             0,
+                             self.ans[1][1], self.ans[1][2]]
+            else:
+                hit_order = [self.ans[1][1], self.ans[1][2],
+                             0,
+                             self.ans[0][1], self.ans[0][2]]
         else:
-            hit_order.append(self.ans[0][0])
-            hit_order.append(self.ans[0][1])
-            hit_order.append(self.ans[0][2])
-        for i in range(1, 4):
-            if self.ans[i][1] > -999 and self.ans[i][2] > -999:
-                hit_order.append(self.ans[i][1])
-                hit_order.append(self.ans[i][2])
+            if self.ans[0][0] == -999:
+                hit_order.append(self.ans[0][1])
+                hit_order.append(self.ans[0][2])
+            else:
+                hit_order.append(self.ans[0][0])
+                hit_order.append(self.ans[0][1])
+                hit_order.append(self.ans[0][2])
+            for i in range(1, 4):
+                if self.ans[i][1] > -999 and self.ans[i][2] > -999:
+                    hit_order.append(self.ans[i][1])
+                    hit_order.append(self.ans[i][2])
 
         return hit_order
