@@ -16,6 +16,7 @@ class ATK_solver:
         ----------
         OPT_ : string
             the operator.
+            
         original_data_ : list
             4 number displayed on ATK.
 
@@ -39,7 +40,7 @@ class ATK_solver:
 
     def bubble_sort(self):
         '''
-
+        just as its name.
 
         Returns
         -------
@@ -82,7 +83,7 @@ class ATK_solver:
         Parameters
         ----------
         dep : int
-            the depth of dfs,which should always 0 when you using this function.
+            the depth of dfs,which should always be 0 when you using this function.
 
         Returns
         -------
@@ -113,8 +114,8 @@ class ATK_solver:
 
                     # 第二种产生数的方式是拼接，必须保证是原数组中的数字拼接，而不是计算所得的结果参与拼接
                     if self.data[i] in self.original_data and self.data[j] in self.original_data:
-                        # 因为是24点，加法不可能出现三位加一位，所以只考虑两个数字拼接，且拼出来的数不可能大于等于24
                         self.data[i] = 10*y+x
+                        # 因为是24点，加法不可能出现三位加一位，所以只考虑两个数字拼接，且拼出来的数不可能大于等于24
                         if self.data[i] < 24:
                             # 记录下标，格式为【-999，num1下标，num2下标】
                             self.ans[dep][1] = self.index[j]
@@ -154,7 +155,7 @@ class ATK_solver:
         Parameters
         ----------
         dep : int
-            the depth of dfs,which should always 0 when you using this function.
+            the depth of dfs,which should always be 0 when you using this function.
 
         Returns
         -------
@@ -221,7 +222,7 @@ class ATK_solver:
         Parameters
         ----------
         dep : int
-            the depth of dfs,which should always 0 when you using this function.
+            the depth of dfs,which should always be 0 when you using this function.
 
         Returns
         -------
@@ -292,6 +293,55 @@ class ATK_solver:
                         self.ans[dep][1] = -999
                         self.ans[dep][2] = -999
 
+    def get_index(self, arr, item, n_st):
+        if n_st <= arr.count(item):
+            all_index = [key for key, value in enumerate(arr) if value == item]
+            return all_index[n_st-1]
+        else:
+            return None
+
+    def div(self):
+        '''
+        process div by enumerate.
+        only the condition below are possible to be solved by div.
+         2 4 1
+         4 8 2
+         7 2 3
+         9 6 4、9 6 2 2
+         1 2 0 5
+         1 4 4 6
+         1 6 8 7
+         1 9 2 8
+         2 1 6 9
+
+        Returns
+        -------
+        Directly return the hit_order
+
+        '''
+        d = self.original_data
+
+        if 2 in d and 4 in d and 1 in d:
+            return [d.index(2)+1, d.index(4)+1, 0, d.index(1)+1]
+        if 4 in d and 8 in d and 2 in d:
+            return [d.index(4)+1, d.index(8)+1, 0, d.index(2)+1]
+        if 7 in d and 2 in d and 3 in d:
+            return [d.index(7)+1, d.index(2)+1, 0, d.index(3)+1]
+        if 9 in d and 6 in d and 4 in d:
+            return [d.index(9)+1, d.index(6)+1, 0, d.index(4)+1]
+        if 1 in d and 2 in d and 0 in d and 5 in d:
+            return [d.index(1)+1, d.index(2)+1, d.index(0)+1, 0, d.index(5)+1]
+        if 1 in d and 6 in d and 8 in d and 7 in d:
+            return [d.index(1)+1, d.index(6)+1, d.index(8)+1, 0, d.index(7)+1]
+        if 1 in d and 9 in d and 2 in d and 8 in d:
+            return [d.index(1)+1, d.index(9)+1, d.index(2)+1, 0, d.index(8)+1]
+        if 2 in d and 1 in d and 6 in d and 9 in d:
+            return [d.index(2)+1, d.index(1)+1, d.index(6)+1, 0, d.index(9)+1]
+        if 9 in d and 6 in d and 2 in d and d.count(2) == 2:
+            return [d.index(9)+1, d.index(6)+1, 0, self.get_index(d, 2, 1)+1, 0, self.get_index(d, 2, 2)+1]
+        if 1 in d and 4 in d and 6 in d and d.count(4) == 2:
+            return [d.index(1)+1, self.get_index(d, 4, 1)+1, self.get_index(d, 4, 2)+1, 0, d.index(6)+1]
+
     def solve(self):
         '''
         Parameters
@@ -310,6 +360,8 @@ class ATK_solver:
             self.add_dfs(0)
         if self.opt == "-":
             self.sub_dfs(0)
+        if self.opt == "/":
+            return
 
     def generate_hit_order(self):
         '''
@@ -321,6 +373,9 @@ class ATK_solver:
             the order to hit the ATK.
             It should be empty if no solution was found
         '''
+        if self.opt == "/":
+            return self.div()
+
         self.solve()
 
         if not self.check():
