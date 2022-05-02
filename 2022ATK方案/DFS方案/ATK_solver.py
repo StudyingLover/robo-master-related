@@ -7,6 +7,12 @@ Created on Sun May  1 11:25:42 2022
 
 
 class ATK_solver:
+    '''
+    把和解24点的相关函数封装了一下。
+    使用的话，实例化一个ATK_solver之后，直接调用generate_hit_order获取打击序列。
+    打击序列中，0代表运算符，其他数字代表打击的数字在original_data中的下标。
+    至于怎么处理成符合机器人视觉数据的格式，就交给你们使用者了。
+    '''
 
     def __init__(self, OPT_, original_data_):
         '''
