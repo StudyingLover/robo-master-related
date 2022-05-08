@@ -37,8 +37,8 @@ for c in cnts:
     M = cv2.moments(c)
     S = int(M["m00"])
     C = int(cv2.arcLength(c, True))
-    cX = int(M["m10"] / M["m00"])
-    cY = int(M["m01"] / M["m00"])
+    cX = int(M["m10"] / (M["m00"]+0.00000001))
+    cY = int(M["m01"] / (M["m00"]+0.00000001))
     cnts_data.append([S,C,cX,cY])
     # draw the contour and center of the shape on the image
     cv2.drawContours(draw_img, [c], -1, (0, 255, 0), 2)
