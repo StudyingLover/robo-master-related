@@ -12,7 +12,7 @@ def nothing(x):
     pass
 #通过Opencv读取图片信息
 #src = cv2.imread('image.jpg')
-img = cv2.imread('red3.png')
+img = cv2.imread('red2.png')
 rows,cols,channels = img.shape
 cv2.namedWindow('img2',1)
 #cv2.resizeWindow("img2", 1000, 400) #创建一个500*500大小的窗口
