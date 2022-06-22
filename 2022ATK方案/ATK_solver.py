@@ -51,7 +51,7 @@ class ATK_solver:
                     for n in range(4):
                         # 通过索引位置不同，确定是不同的数字
                         if i != j and i != m and i != n and j != m and j != n and m != n:
-
+                                
                             arrange.append([original_data[i], original_data[j],
                                            original_data[m], original_data[n]])
                             index.append([i+1, j+1, m+1, n+1])
@@ -110,26 +110,27 @@ class ATK_solver:
         # try
         for l in arrange:
             i = arrange.index(l)
-            # first case: ab * c
-            if (l[0] * 10 + l[1]) * l[2] == 24:
-                hit_order = [index[i][0], index[i][1], 0, index[i][2]]
-                return hit_order
-
-            # second case: a * b:
+            
+            # first case: a * b:
             if l[0]*l[1] == 24:
                 hit_order = [index[i][0], 0, index[i][1]]
                 return hit_order
-
-            # third case: a * b * c * d
-            if l[0] * l[1] * l[2] * l[3] == 24:
-                hit_order = [index[i][0], 0, index[i][1],
-                             0, index[i][2], 0, index[i][3]]
+            
+            # second case: ab * c
+            if (l[0] * 10 + l[1]) * l[2] == 24:
+                hit_order = [index[i][0], index[i][1], 0, index[i][2]]
                 return hit_order
-
-            #fourth case: a * b * c
+            
+            #third case: a * b * c
             if l[0] * l[1] * l[2] == 24:
                 hit_order = [index[1][0], 0, index[i]
                              [1], 0, index[i][2]]
+                return hit_order
+            
+            #fourth case: a * b * c * d
+            if l[0] * l[1] * l[2] * l[3] == 24:
+                hit_order = [index[i][0], 0, index[i][1],
+                             0, index[i][2], 0, index[i][3]]
                 return hit_order
 
         return "No answer!"
