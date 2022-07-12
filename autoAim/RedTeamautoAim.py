@@ -6,11 +6,10 @@ Created on Tue Jul  5 14:25:39 2022
 """
 
 from math import *
-from cv2 import SOLVEPNP_EPNP, SOLVEPNP_IPPE
+from cv2 import SOLVEPNP_IPPE
 import serial as ser
 import cv2
 import numpy as np
-import os
 
 
 ARMOR_HEIGHT = 2.75
@@ -80,6 +79,23 @@ def binary(img, threshold):
     return binary
 
 
+def sort_contours(cnts, method='bottom-to-top'):
+    # initialize the reverse flag and sort index
+    reverse = False
+    i = 0
+    # handle if sort in reverse
+    if method == 'right-to-left' or method == 'bottom-to-top':
+        reverse = True
+    # handle if sort against y rather than x of the bounding box
+    if method == 'bottom-to-top' or method == 'top-to-bottom':
+        i = 1
+
+    boundingBoxes = [cv2.boundingRect(c) for c in cnts]
+    (cnts, boundingBoxes) = zip(*sorted(zip(cnts, boundingBoxes), key=lambda b: b[1][i], reverse=reverse))
+    return (cnts, boundingBoxes)
+
+
+
 def find_armor(img):
     '''
     Parameters
@@ -103,66 +119,12 @@ def find_armor(img):
         for c in cnts:
             M = cv2.moments(c)
             S = int(M["m00"])
-            cY = int(M["m01"] / (M["m00"]+0.00000001))
-            if S > 50 and cY < cYmin and S > Smax:
-                Smax = S
-                cYmin = cY
-                c_with_min_cY_max_S = c
-                changed = True
-
-        if changed:    
-            min_rect = cv2.minAreaRect(c_with_min_cY_max_S)
-            four_points_of_rect = cv2.boxPoints(min_rect)
-            four_points_of_rect = np.int0(four_points_of_rect)
-
-            min_x = 1920
-            min_y = 1920
-            max_x = -1
-            max_y = -1
-            for point in four_points_of_rect:
-                if point[0] < min_x and point[1] < min_y:
-                    min_x = point[0] 
-                    min_y = point[1]
-                if point[0] > max_x and point[1] > max_y:
-                    max_x = point[0] 
-                    max_y = point[1]
-
-            cv2.drawContours(draw_img, [four_points_of_rect], 0, (0, 255, 0), 2)
-
-            four_points_sorted = []
-            for point in four_points_of_rect:
-                if point[0] == min_x and point[1] == min_y:
-                    four_points_sorted.append(point) 
-                if point[0] == max_x and point[1] == min_y:
-                    four_points_sorted.append(point)
-                if point[0] == max_x and point[1] == max_y:
-                    four_points_sorted.append(point)
-                if point[0] == min_x and point[1] == max_y:
-                    four_points_sorted.append(point)
+            if S < 50:
+                cnts.remove(c)
                 
-            cv2.imshow("armor_box", draw_img)
-            
-            if cv2.waitKey(1) & 0xFF == ord('q'):  # 等待按键q按下
-                cv2.destroyAllWindows()
-            
-            return four_points_sorted
-    else:
-        return None
-
-def angle_calc(R):
-
-    sy = sqrt(R[0,0] * R[0,0] +  R[1,0] * R[1,0])
-    
-    singular = sy < 1e-6
-
-    if  not singular :
-        y = atan2(-R[2,0], sy) * 180 / 3.1415926535
-        z = atan2(R[1,0], R[0,0]) * 180 / 3.1415926535
-    else :
-        y = atan2(-R[2,0], sy) * 180 / 3.1415926535 + 1.2
-        z = 0 * 180 / 3.1415926535
-
-    return z, -y
+            cY = int(M["m01"] / (M["m00"] + 0.00000001))
+            cX = int(M["m10"] / (M["m00"] + 0.00000001))
+           
 
 def uart_send(uart, shoot_yaw,shoot_pitch):
     shoot_yaw=round(shoot_yaw,1)
