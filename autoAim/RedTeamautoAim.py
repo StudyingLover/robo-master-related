@@ -169,7 +169,7 @@ def uart_send(uart, shoot_yaw,shoot_pitch):
     shoot_pitch=round(shoot_pitch,1)
     shoot_yaw=str(shoot_yaw)
     shoot_pitch=str(shoot_pitch)
-    pos=shoot_yaw+" "+shoot_pitch+" "+""
+    pos=shoot_yaw+"|"+shoot_pitch+" "+";"
     uart.write(str(pos).encode('utf-8'))
 
 if __name__ == '__main__':
